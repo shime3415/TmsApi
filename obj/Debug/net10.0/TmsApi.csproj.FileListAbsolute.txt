@@ -204,3 +204,4 @@ C:\Users\CSUG\Desktop\TmsAp\module-4\bin\Debug\net10.0\zh-Hans\Microsoft.CodeAna
 C:\Users\CSUG\Desktop\TmsAp\module-4\bin\Debug\net10.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 C:\Users\CSUG\Desktop\TmsAp\module-4\obj\Debug\net10.0\TmsApi.csproj.AssemblyReference.cache
 C:\Users\CSUG\Desktop\TmsAp\module-4\obj\Debug\net10.0\TmsApi.csproj.Up2Date
+C:\Users\CSUG\Desktop\TmsAp\module-4\bin\Debug\net10.0\Scalar.AspNetCore.dll
