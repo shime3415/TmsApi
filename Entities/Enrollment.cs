@@ -10,4 +10,7 @@ public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
 // Navigation properties back to entities
 public Student Student { get; set; } = null!;
 public Course Course { get; set; } = null!;
+   // NEW PROPERTY
+    public bool IsArchived { get; set; } = false;
+
 }
