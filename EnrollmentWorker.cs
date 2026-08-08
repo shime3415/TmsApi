@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+using TmsApi.Services;
 
 public class EnrollmentWorker
 {
@@ -16,7 +16,7 @@ public class EnrollmentWorker
         var enrollmentService =
             scope.ServiceProvider.GetRequiredService<IEnrollmentService>();
 
-        // Example usage
-        var enrollments = enrollmentService.GetAllAsync().Result;
+        // TODO: update this to use the current IEnrollmentService methods
+        // (GetByIdAsync(courseId, id, ct) or CreateAsync(courseId, request, ct))
     }
 }

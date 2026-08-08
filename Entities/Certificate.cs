@@ -1,4 +1,3 @@
-using System;
 namespace TmsApi.Entities;
 public class Certificate
 {

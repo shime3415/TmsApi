@@ -17,12 +17,10 @@ public class TmsDbContext(DbContextOptions<TmsDbContext> options)
 
     public DbSet<Certificate> Certificates => Set<Certificate>();
 
+   // TmsDbContext.cs
     protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
-
-        // Picks up StudentConfiguration and any other IEntityTypeConfiguration<T>
-        // classes in the same assembly automatically.
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(TmsDbContext).Assembly);
-    }
+     {
+    modelBuilder.ApplyConfigurationsFromAssembly(typeof(TmsDbContext).Assembly);
+    // that's it — EF finds all your config classes automatically
+      }
 }

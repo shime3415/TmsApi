@@ -1,8 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using TmsApi.Data;
-using TmsApi.Entities;
-using TmsApi.Services;
-using Scalar.AspNetCore;
 namespace TMS.Services
 {
     public class StudentReportService
