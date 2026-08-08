@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Module4.Authentication;
 using Microsoft.EntityFrameworkCore;
 using TmsApi.Data;
+using TmsApi.Filters;
 using TmsApi.Services;
 using Scalar.AspNetCore;
 
@@ -32,7 +33,9 @@ builder.Services.AddDbContext<TmsDbContext>(options =>
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{options.Filters.Add<AuditLogFilter>();
+});
 
 // Required for OpenAPI document generation (needed by Scalar)
 builder.Services.AddOpenApi();
@@ -54,6 +57,15 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();            // exposes /openapi/v1.json
     app.MapScalarApiReference(); // exposes /scalar/v1 UI
 }
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<TmsDbContext>();
+    await DataSeeder.SeedAsync(context);
+}
+
+
 
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseRouting();

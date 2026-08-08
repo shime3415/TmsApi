@@ -15,20 +15,28 @@ public class CoursesController(ICourseService courseService) : ControllerBase
         return course is not null ? Ok(course) : NotFound();
     }
 
-    [HttpPost]
-public async Task<IActionResult> CreateCourse(CreateCourseRequest request, CancellationToken ct)
-{
-    if (await courseService.CodeExistsAsync(request.Code, ct))
+    [HttpGet]
+    public async Task<IActionResult> GetCourses(
+        [FromQuery] PagedRequest request, CancellationToken ct)
     {
-        return Conflict(new ProblemDetails
-        {
-            Title = "Course code already exists",
-            Detail = $"A course with code '{request.Code}' is already registered.",
-            Status = StatusCodes.Status409Conflict
-        });
+        var result = await courseService.GetCoursesAsync(request, ct);
+        return Ok(result);
     }
 
-    var result = await courseService.CreateAsync(request, ct);
-    return CreatedAtAction(nameof(GetCourseById), new { id = result.Id }, result);
-}
+    [HttpPost]
+    public async Task<IActionResult> CreateCourse(CreateCourseRequest request, CancellationToken ct)
+    {
+        if (await courseService.CodeExistsAsync(request.Code, ct))
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Course code already exists",
+                Detail = $"A course with code '{request.Code}' is already registered.",
+                Status = StatusCodes.Status409Conflict
+            });
+        }
+
+        var result = await courseService.CreateAsync(request, ct);
+        return CreatedAtAction(nameof(GetCourseById), new { id = result.Id }, result);
+    }
 }
