@@ -17,10 +17,15 @@ public class CourseService(TmsDbContext context, ILogger<CourseService> logger) 
                 c.Id, c.Code, c.Title, c.MaxCapacity, c.Enrollments.Count))
             .FirstOrDefaultAsync(ct);
 
- public Task<bool> CodeExistsAsync(string code, CancellationToken ct) =>
-    context.Courses.AsNoTracking().AnyAsync(c => c.Code == code, ct);
+    public Task<bool> CodeExistsAsync(string code, CancellationToken ct) =>
+        context.Courses.AsNoTracking().AnyAsync(c => c.Code == code, ct);
 
-public async Task<PagedResponse<CourseResponseDto>> GetCoursesAsync(
+    public Task<Course?> GetByCodeAsync(string code, CancellationToken ct) =>
+        context.Courses
+            .Include(c => c.Enrollments)
+            .FirstOrDefaultAsync(c => c.Code == code, ct);
+
+    public async Task<PagedResponse<CourseResponseDto>> GetCoursesAsync(
         PagedRequest request, CancellationToken ct)
     {
         IQueryable<Course> query = context.Courses.AsNoTracking();
