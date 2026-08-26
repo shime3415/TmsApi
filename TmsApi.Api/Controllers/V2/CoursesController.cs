@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using TmsApi.Infrastructure.Persistence;
 
@@ -60,5 +61,20 @@ public class CoursesController(TmsDbContext context) : ControllerBase
                 enroll = "/api/v2/enrollments"
             }
         });
+    }
+
+    // NEW METHOD — added here, inside the same class, after GetCourses
+    [HttpGet("search")]
+    [EnableRateLimiting("search")]
+    public async Task<IActionResult> SearchCourses(
+        [FromQuery] string? term, CancellationToken ct)
+    {
+        var results = await context.Courses
+            .AsNoTracking()
+            .Where(c => term == null || c.Title.Contains(term) || c.Code.Contains(term))
+            .Select(c => new { c.Id, c.Title, c.Code })
+            .ToListAsync(ct);
+
+        return Ok(results);
     }
 }
