@@ -1,3 +1,9 @@
+using TmsApi.Api.Notifications;
+using TmsApi.Application.Notifications;
+using TmsApi.Api.Hubs;
+using TmsApi.Infrastructure.Workers;
+using TmsApi.Application.Transcripts;
+using TmsApi.Infrastructure.Transcripts;
 using TmsApi.Api.Middleware;
 using TmsApi.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -18,11 +24,22 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using TmsApi.Api.RateLimiting;
+using System.Threading.Channels;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Standard RFC 7807 error responses for unhandled exceptions & status codes
 builder.Services.AddProblemDetails();
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
 
 builder.Services.AddOptions<PaymentOptions>()
     .BindConfiguration("Payments")
@@ -57,6 +74,10 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<StudentService>();
 builder.Services.AddScoped<ICachedCourseService, CachedCourseService>();
+builder.Services.AddSingleton<ITranscriptStatusStore, InMemoryTranscriptStatusStore>();
+builder.Services.AddSingleton<ITranscriptNotificationService, SignalRTranscriptNotificationService>();
+builder.Services.AddSingleton<ITranscriptStatusStore, InMemoryTranscriptStatusStore>();
+builder.Services.AddSingleton<ITranscriptNotificationService, SignalRTranscriptNotificationService>();
 
 
 builder.Services.AddApiVersioning(options =>
@@ -147,6 +168,14 @@ builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavi
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddHostedService<TranscriptWorker>();
+builder.Services.AddSignalR();
+
+builder.Services.AddSingleton(Channel.CreateBounded<TranscriptRequest>(
+    new BoundedChannelOptions(100)
+    {
+        FullMode = BoundedChannelFullMode.Wait
+    }));
 
 builder.Services.AddHybridCache(options =>
 {
@@ -157,6 +186,13 @@ builder.Services.AddHybridCache(options =>
     };
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 var app = builder.Build();
 
 // Turns unhandled exceptions into clean ProblemDetails (500) instead of raw stack traces
@@ -178,8 +214,10 @@ if (app.Environment.IsDevelopment())
     await DataSeeder.SeedAsync(context);
 }
 
+app.MapHub<TmsHub>("/hubs/tms");
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseRouting();
+app.UseCors("AllowAngular");
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
